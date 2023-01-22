@@ -21,6 +21,8 @@
 // @licend  The above is the entire license notice for the JavaScript
 //  code in this page.
 
+const colsDB = 80;
+
 // Several editors can be on a single page. We need to keep track of
 // which editor receives keypresses and mouse events.
 var active_editor = null;
@@ -168,7 +170,7 @@ var init_state = function() {
 		tg[r] = []; cs[r] = []; nd[r] = [];
 		hg[r] = []; sc[r] = []; sf[r] = [];
 		fs[r] = 0; clipboard[r] = [];
-		for (var c = 0; c < 40; c++) {
+		for (var c = 0; c < colsDB; c++) {
 			clear_char(c,r);
 		}
 	}
@@ -188,7 +190,7 @@ var init_state = function() {
 var init_canvas = function() {
 
 	// The dimensions depend on whether the status bar is shown
-	width = 480; height = 540;
+	width = 12*colsDB; height = 540;
 	if ( statushidden == 1 ) { height = 500; }
 
 	var c = document.getElementById(canvasid);
@@ -254,7 +256,7 @@ var clear_char = function(x,y) {
 // frame again to show it.
 var show_grid = function(newgrid) {
 	grid = newgrid;
-	render(0, 0, 40, 25);
+	render(0, 0, colsDB, 25);
 }
 var toggle_grid = function() {
 	var newgrid = grid + 1;
@@ -283,7 +285,7 @@ var show_codes = function(newcode) {
 
 	// Update all cells which contain a control character
 	for (var r = 0; r < 25; r++) {
-		for (var c = 0; c < 40; c++) {
+		for (var c = 0; c < colsDB; c++) {
 			if (
 				( cc[r][c] >= 0 && cc[r][c] <= 31 ) // a control character
 			||	( sc[r][c] > 0 ) // a concealed character
@@ -317,13 +319,13 @@ var delete_row = function(r) {
 
 	// For each row, copy the data from the row below.
 	for ( var y = r; y < 24; y++ ) {
-		for ( var x = 0; x < 40; x++ ) {
+		for ( var x = 0; x < colsDB; x++ ) {
 			copy_char(x,y+1,x,y);
 		}
 	}
 
 	// Clear the bottom row.
-	for ( var x = 0; x < 40; x++ ) {
+	for ( var x = 0; x < colsDB; x++ ) {
 		clear_char(x,24)
 	}
 
@@ -332,7 +334,7 @@ var delete_row = function(r) {
 	adjustdh_fullscreen(0);
 
 	// Re-render the affected area.
-	render(0, r, 40, 25-r);
+	render(0, r, colsDB, 25-r);
 }
 
 // Inserts an empty row at row r.
@@ -342,18 +344,18 @@ var insert_row = function(r) {
 	// Working up from the bottom of the screen, copy the
 	// data from the row above.
 	for ( var y = 23; y >= r; y-- ) {
-		for ( var x = 0; x < 40; x++ ) {
+		for ( var x = 0; x < colsDB; x++ ) {
 			copy_char(x,y,x,y+1);
 		}
 	}
 
 	// Clear the row.
-	for ( var x = 0; x < 40; x++ ) {
+	for ( var x = 0; x < colsDB; x++ ) {
 		clear_char(x,r)
 	}
 
 	adjustdh_fullscreen(0);
-	render(0, r, 40, 25-r);
+	render(0, r, colsDB, 25-r);
 }
 
 // Duplicates row r to the one below it, shifting all
@@ -364,13 +366,13 @@ var duplicate_row = function(r) {
 	// Working up from the bottom of the screen, copy the
 	// data from the row above.
 	for ( var y = 23; y >= r; y-- ) {
-		for ( var x = 0; x < 40; x++ ) {
+		for ( var x = 0; x < colsDB; x++ ) {
 			copy_char(x,y,x,y+1);
 		}
 	}
 
 	adjustdh_fullscreen(0);
-	render(0, r, 40, 25-r);
+	render(0, r, colsDB, 25-r);
 }
 
 // Redraw the whole screen by deleting its contents and
@@ -378,7 +380,7 @@ var duplicate_row = function(r) {
 var redraw = function() {
 	// Clear all attributes
 	for ( var y = 0; y < 25; y++ ) {
-		for ( var x = 0; x < 40; x++ ) {
+		for ( var x = 0; x < colsDB; x++ ) {
 			fg[y][x] = 7; bg[y][x] = 0;
 			tg[y][x] = 0; cs[y][x] = 0; nd[y][x] = 0;
 			hg[y][x] = 0; sc[y][x] = 0; sf[y][x] = 0;
@@ -387,7 +389,7 @@ var redraw = function() {
 
 	// Write each character back to the screen.
 	for ( var r = 0; r < 25; r++) {
-		for ( var c = 0; c < 40; c++) {
+		for ( var c = 0; c < colsDB; c++) {
 			var code = cc[r][c];
 			if ( placeable(code) == 1 ) {
 				place_code(c, r, code, 0);
@@ -398,7 +400,7 @@ var redraw = function() {
 	}
 
 	// Re-render the whole screen.
-	render(0,0,40,25);
+	render(0,0,colsDB,25);
 }
 
 // Clear each character and reset the double height
@@ -422,13 +424,13 @@ var wipe = function(andrender) {
 	m_fastext_index = 0x8FF;
 
 	for ( var r = 0; r < 25; r++ ) {
-		for ( var c = 0; c < 40; c++ ) {
+		for ( var c = 0; c < colsDB; c++ ) {
 			clear_char(c, r);
 		}
 		fs[r] = 0;
 	}
 	if ( andrender != 0 ) {
-		render(0,0,40,25,0);
+		render(0,0,colsDB,25,0);
 	}
 }
 
@@ -658,7 +660,7 @@ var click_listener = function(event, state) {
 
 	// We clip the result to the canvas coordinates.
 	if ( x < 0 ) { x = 0; }
-	if ( x >= 12*40*aspect_ratio ) { x = 12*40*aspect_ratio - 1; }
+	if ( x >= 12*colsDB*aspect_ratio ) { x = 12*colsDB*aspect_ratio - 1; }
 	if ( y < 0 ) { y = 0; }
 	if ( y >= 20*25 ) { y = 20*25 - 1; }
 
@@ -743,7 +745,7 @@ var init_mouse = function() {
 // A direct way to load and render a hashstring.
 this.load = function(hashstring) {
 	load_from_hashstring(hashstring);
-	render(0, 0, 40, 25, 0);
+	render(0, 0, colsDB, 25, 0);
 }
 
 // Loads data from the hash into the frame.
@@ -896,13 +898,13 @@ var load_from_hashstring = function(hashstring) {
 		for ( var r = 0; r < 24; r++) {
 
 			// It's a good test to do this backwards!
-			for ( var c = 39 ; c >= 0; c--) {
+			for ( var c = colsDB-1 ; c >= 0; c--) {
 
 				// Default to a space.
 				cc[r][c] = 32;
 
 				// The characte offset for this value is as follows:
-				var offset = 2 * ( ( r * 40 ) + c );
+				var offset = 2 * ( ( r * colsDB ) + c );
 
 				// If the data is here, turn it into an integer between 0 and
 				// 127, and set the cc-array with that code.
@@ -968,8 +970,8 @@ var load_from_hashstring = function(hashstring) {
 
 					// Work out the cell to write to and put it there.
 					var charnum = ( ( 6*p + b ) - charbit ) / 7;
-					var c = charnum % 40;
-					var r = (charnum - c) / 40;
+					var c = charnum % colsDB;
+					var r = (charnum - c) / colsDB;
 					if ( placeable(currentcode) == 1 ) {
 						place_code(c, r, currentcode, 0);
 					} else {
@@ -985,7 +987,7 @@ var load_from_hashstring = function(hashstring) {
 		// If we only read in a 24-line file, we need to blank the final
 		// line.
 		if ( numlines == 24 ) {
-			for ( var x = 0; x < 40; x++ ) { clear_char(x,24) }
+			for ( var x = 0; x < colsDB; x++ ) { clear_char(x,24) }
 		}
 	}
 }
@@ -1019,12 +1021,12 @@ var save_to_hash = function() {
 	// in the frame.
 	var b64 = [];
 	for ( var r=0; r<25; r++ ) {
-		for ( var c=0; c<40; c++ ) {
+		for ( var c=0; c<colsDB; c++ ) {
 			for ( var b=0; b<7; b++ ) {
 
 				// How many bits into the frame information we
 				// are.
-				var framebit = 7 * (( r * 40 ) + c) + b;
+				var framebit = 7 * (( r * colsDB ) + c) + b;
 
 				// Work out the position of the character in the
 				// base-64 encoding and the bit in that position.
@@ -1107,7 +1109,7 @@ var export_frame = function() {
 	for ( var r=0; r<25; r++ ) {
 		var ttirowstring = "";
 		var blankrow = true;
-		for ( var c=0; c<40; c++ ) {
+		for ( var c=0; c<colsDB; c++ ) {
 			var xcc = cc[r][c];
 			if (xcc != 0x20) { blankrow = false; }
 			rawstring_0 = rawstring_0 + String.fromCharCode(xcc);
@@ -1157,7 +1159,7 @@ var export_frame = function() {
 		ep1string = ep1string + String.fromCharCode(0);
 		ep1string = ep1string + String.fromCharCode(0);
 		for ( var r=0; r<25; r++ ) {
-		for ( var c=0; c<40; c++ ) {
+		for ( var c=0; c<colsDB; c++ ) {
 						ep1string = ep1string + String.fromCharCode(cc[r][c]);
 				}
 		}
@@ -1316,7 +1318,7 @@ var draw_status_bar = function() {
 	if ( escape != 1 ) { ctx.fillStyle = "#808080"; }
 
 	// Draw the background to the bar and set up the font.
-	ctx.fillRect(0, (25*20+2)*pix_scale, 40*12*pix_scale, 36*pix_scale);
+	ctx.fillRect(0, (25*20+2)*pix_scale, colsDB*12*pix_scale, 36*pix_scale);
 
 	ctx.font = (13*pix_scale)+"px Arial";
 	ctx.fillStyle = "#000";
@@ -1525,7 +1527,7 @@ var unhide_status_bar = function() {
 		// to the full underlying resolution.
 		pix_scale = full_pix_scale;
 		init_canvas();
-		render(0,0,40,25,0);
+		render(0,0,colsDB,25,0);
 		draw_status_bar();
 		highlight_hints();
 	}
@@ -1539,7 +1541,7 @@ var hide_status_bar = function() {
 		// reduce the underlying resolution.
 		pix_scale = 1;
 		init_canvas();
-		render(0,0,40,25,0);
+		render(0,0,colsDB,25,0);
 		highlight_hints();
 	}
 }
@@ -1574,16 +1576,16 @@ var highlight_hints = function() {
 var compliance_level = function() {
 	// Bright red means that the frame can't exist on a broadcast system.
 	for (var c = 0; c <= 7; c++) { if ( cc[0][c] != 32 ) return 0; }
-	for (var c = 0; c <= 39; c++) {
+	for (var c = 0; c < colsDB; c++) {
 		if ( cc[0][c] == 13 || cc[23][c] == 13 || cc[24][c] == 13  )
 			return 0;
 	}
 
 	// Dull red means that the user has overwritten the header line.
-	for (var c = 8; c <= 39; c++) { if ( cc[0][c] != 32 ) return 1; }
+	for (var c = 8; c < colsDB; c++) { if ( cc[0][c] != 32 ) return 1; }
 
 	// Yellow means that row 24, reserved for Fastext, has been overwritten.
-	for (var c = 0; c <= 39; c++) { if ( cc[24][c] != 32 ) return 2; }
+	for (var c = 0; c < colsDB; c++) { if ( cc[24][c] != 32 ) return 2; }
 
 	// Dull green means the frames can be fixed without looking any
 	// different, for example by removing control characters, and be
@@ -1661,7 +1663,7 @@ this.keydown = function(event) {
 		if ( code == 38 ) { shift_sixels(x1, y1, x2, y2, 0, -1); }
 		
 		gfx_change(x1, y1, x2, y2);
-		autorender(x1, y1, 40 - x1, y2 - y1 + 1);
+		autorender(x1, y1, colsDB - x1, y2 - y1 + 1);
 	}
 
 	// Pressing return is considered a cursor action here.
@@ -1820,7 +1822,7 @@ this.keypress = function(event) {
 			if ( current_ratio < 0 ) { current_ratio = 0; }
 			aspect_ratio = aspect_ratios[current_ratio];
 			init_canvas();
-			render(0,0,40,25,0);
+			render(0,0,colsDB,25,0);
 		}
 
 		if ( code == 93 || code == 62 ) {
@@ -1831,7 +1833,7 @@ this.keypress = function(event) {
 			}
 			aspect_ratio = aspect_ratios[current_ratio];
 			init_canvas();
-			render(0,0,40,25,0);
+			render(0,0,colsDB,25,0);
 		}
 
 		// We can also switch between character sets here.
@@ -1869,7 +1871,7 @@ this.keypress = function(event) {
 				// We need to clip the size of the rectangle to avoid writing
 				// off the edge of the screen.
 
-				var x_max = curx + clipboard_size_x; if ( x_max > 40 ) { x_max = 40; }
+				var x_max = curx + clipboard_size_x; if ( x_max > colsDB ) { x_max = colsDB; }
 				var y_max = cury + clipboard_size_y; if ( y_max > 25 ) { y_max = 25; }
 
 				for ( var y = cury; y < y_max; y++ ) {
@@ -1883,7 +1885,7 @@ this.keypress = function(event) {
 				// When we paste, we select the pasted cells so we can more easily
 				// re-cut.
 				curx_opposite = curx + clipboard_size_x - 1;
-				if ( curx_opposite > 39 ) { curx_opposite = 39; }
+				if ( curx_opposite > colsDB-1 ) { curx_opposite = colsDB-1; }
 				cury_opposite = cury + clipboard_size_y - 1;
 				if ( cury_opposite > 24 ) { cury_opposite = 24; }
 				retain_rectangle = 1;
@@ -1892,7 +1894,7 @@ this.keypress = function(event) {
 				// idea since we'll end up re-rendering the cell lots. Instead we put
 				// the characters, still updating the control codes, and render at the
 				// end. We just render to the end of each line.
-				autorender(curx, cury, 40-curx, clipboard_size_y);
+				autorender(curx, cury, colsDB-curx, clipboard_size_y);
 			}
 
 		}
@@ -1930,13 +1932,13 @@ this.keypress = function(event) {
 			
 			disappear_cursor_rectangle();
 			if ( cut == 1 ) {
-				autorender(x1, y1, 40 - x1, y2 - y1 + 1);
+				autorender(x1, y1, colsDB - x1, y2 - y1 + 1);
 			}
 			// If we haven't changed the content of the cells, we just need
 			// to do a simple render to remove the shading that shows the
 			// rectangle.
 			if ( cut == 0 ) {
-				render(x1, y1, 40 - x1, y2 - y1 + 1);
+				render(x1, y1, colsDB - x1, y2 - y1 + 1);
 			}
 		}
 
@@ -2121,7 +2123,7 @@ var advance_cursor = function() {
 }
 
 var cursor_right = function() {
-	if ( ( curx_opposite != -1 && cury_opposite != -1 ) && curx == 39 ) { return; }
+	if ( ( curx_opposite != -1 && cury_opposite != -1 ) && curx == colsDB-1 ) { return; }
 	// The first cell that needs to be re-rendered is the original one.
 	var old_curx = curx; var old_cury = cury;
 
@@ -2131,7 +2133,7 @@ var cursor_right = function() {
 
 		// Move the cursor and wrap it if needed.
 		curx++;
-		if ( curx > 39 ) { cury++; curx = 0; } else { split = 0; }
+		if ( curx > colsDB - 1 ) { cury++; curx = 0; } else { split = 0; }
 		if ( cury > 24 ) { cury = 0; }
 
 		// Render, depending on whether it's a split or not.
@@ -2163,7 +2165,7 @@ var cursor_left_for_hebrew = function() {
 	if ( curx_opposite == -1 || cury_opposite == -1 ) {
 		var split = 1;
 		curx--;
-		if ( curx < 0 ) { cury++; curx = 39; } else { split = 0; }
+		if ( curx < 0 ) { cury++; curx = colsDB - 1; } else { split = 0; }
 		if ( cury > 24 ) { cury = 0; }
 		if ( split == 0 ) { render(curx, cury, 2, 1, 1); }
 		if ( split == 1 ) {
@@ -2192,7 +2194,7 @@ var cursor_left = function() {
 	if ( curx_opposite == -1 || cury_opposite == -1 ) {
 		var split = 1; // is it necessary to call render() twice?
 		curx--;
-		if ( curx < 0 ) { cury--; curx = 39; } else { split = 0; }
+		if ( curx < 0 ) { cury--; curx = colsDB - 1; } else { split = 0; }
 		if ( cury < 0 ) { cury = 24; }
 		if ( split == 0 ) { render(curx, cury, 2, 1, 1); }
 		if ( split == 1 ) {
@@ -2322,7 +2324,7 @@ var cursor_tab = function() {
 
 	// We shift everything from where we are forward one cell,
 	// starting from the end.
-	for ( var c = 39; c > curx; c-- ) {
+	for ( var c = colsDB - 1; c > curx; c-- ) {
 		copy_char(c-1, cury, c, cury);
 	}
 
@@ -2342,10 +2344,10 @@ var cursor_tab = function() {
 	// there was no split, we do the whole rest of the line, including
 	// any double height effects, etc
 	curx++;
-	if ( curx > 39 ) { cury++; curx = 0; } else { split = 0; }
+	if ( curx > colsDB - 1 ) { cury++; curx = 0; } else { split = 0; }
 	if ( cury > 24 ) { cury = 0; }
 	if ( split == 0 ) {
-		autorender(old_curx, cury, 40-old_curx, 1);
+		autorender(old_curx, cury, colsDB-old_curx, 1);
 	}
 	if ( split == 1 ) {
 		autorender(old_curx, old_cury, 1, 1);
@@ -2365,7 +2367,7 @@ var cursor_bs = function() {
 	var old_cury = cury;
 	var split = 1;
 	curx--;
-	if ( curx < 0 ) { cury--; curx = 39; } else { split = 0; }
+	if ( curx < 0 ) { cury--; curx = colsDB - 1; } else { split = 0; }
 	if ( cury < 0 ) { cury = 24; }
 
 	// Are we deleting a control code? If so correct for this.
@@ -2376,11 +2378,11 @@ var cursor_bs = function() {
 	// the screen edge and wrapped, just render the two cursor
 	// positions.
 	if ( split == 0 ) {
-		for ( var c = curx; c < 39; c++ ) {
+		for ( var c = curx; c < colsDB - 1; c++ ) {
 			copy_char(c+1, cury, c, cury);
 		}
-		cc[cury][39] = 32;
-		autorender(curx, cury, 40 - curx, 1, 0);
+		cc[cury][colsDB] = 32;
+		autorender(curx, cury, colsDB - curx, 1, 0);
 	}
 	if ( split == 1 ) {
 		render(old_curx, old_cury, 1, 1);
@@ -2484,7 +2486,7 @@ var adjustdh = function(x,y,andrender,removal) {
 
 		// Does this row contain a double-height character (13)?
 		var dhfound = 0;
-		for ( var c = 0; c < 40; c++ ) {
+		for ( var c = 0; c < colsDB; c++ ) {
 			var ecc = cc[r][c];
 			if ( removal == 1 && x == c && y == r ) { ecc = 32; }
 			if ( ecc == 13 ) { dhfound = 1; }
@@ -2505,7 +2507,7 @@ var adjustdh = function(x,y,andrender,removal) {
 
 		// Now render the line.
 		if ( andrender == 1 ) {
-			render(0, r, 40, 1, 0);
+			render(0, r, colsDB, 1, 0);
 		}
 
 		// We can stop after this point if we wouldn't make a
@@ -2524,7 +2526,7 @@ var adjustdh_fullscreen = function(andrender) {
 	for ( var r = 0; r < 25; r++ ) {
 		var fs_from = fs[r];
 		var dhfound = 0;
-		for ( var c = 0; c < 40; c++ ) {
+		for ( var c = 0; c < colsDB; c++ ) {
 			var ecc = cc[r][c];
 			if ( ecc == 13 ) { dhfound = 1; }
 		}
@@ -2538,7 +2540,7 @@ var adjustdh_fullscreen = function(andrender) {
 		above = fs_to;
 		fs[r] = fs_to;
 		if ( andrender == 1 ) {
-			render(0, r, 40, 1, 0);
+			render(0, r, colsDB, 1, 0);
 		}
 	}
 }
@@ -2578,7 +2580,7 @@ var place_code = function(x,y,code,andrender) {
 
 		// In all of these cases, limit refers to the first
 		// character which is no longer affected by the changes.
-		var limit = 40;
+		var limit = colsDB;
 
 		// This is used to update held graphics dependencies
 		// later on in the frame. We keep track of the span of
@@ -2604,7 +2606,7 @@ var place_code = function(x,y,code,andrender) {
 
 		// Let's scan the rest of the row for effects. Colour codes
 		// are set-after, so we start with the next character.
-		for ( var c = x + 1; c < 40; c++ ) {
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			var codehere = cc[y][c];
 
 			// First, set-at code tests appear. This is because later
@@ -2685,8 +2687,8 @@ var place_code = function(x,y,code,andrender) {
 	if ( code == 28 || code == 29 ) {
 		cc[y][x] = code;
 
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 28 || cc[y][c] == 29 ) {
 				limit = c; break;
 			}
@@ -2709,8 +2711,8 @@ var place_code = function(x,y,code,andrender) {
 		cc[y][x] = code;
 		var newsep = code - 25;
 
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 25 || cc[y][c] == 26 ) {
 				limit = c; break;
 			}
@@ -2739,8 +2741,8 @@ var place_code = function(x,y,code,andrender) {
 			if ( x > 0 && nd[y][x-1] == 1 ) { newheight = 2; }
 		}
 
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 12 && nd[y][c] == 2 ) {
 				limit = c; break;
 			}
@@ -2784,8 +2786,8 @@ var place_code = function(x,y,code,andrender) {
 		var newhg = 1;
 		if ( code == 31 ) { newhg = 0; }
 
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 30 ) { // hold is set-at
 				limit = c; break;
 			}
@@ -2815,8 +2817,8 @@ var place_code = function(x,y,code,andrender) {
 	if ( code == 24 ) {
 		cc[y][x] = code;
 
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 
 			// Conceal is cancelled by a text or mosaic colour
 			// code.
@@ -2854,8 +2856,8 @@ var place_code = function(x,y,code,andrender) {
 		var newsf = 0;
 		if ( code == 8 ) { newsf = 1; }
 
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 8 ) { limit = c+1; break; } // flash is set-after
 			if ( cc[y][c] == 9 ) { limit = c; break; } // steady is set-at
 		}
@@ -2937,7 +2939,7 @@ var check_for_remove_code = function(x, y, andrender) {
 		// And we compute the limit in a similiar way to the way
 		// it's done in place_code(), so have a look there for
 		// more detailed comments.
-		var limit = 40;
+		var limit = colsDB;
 		var fg_affected = lastcode; // we've just changed it.
 		var bg_affected = -1;       // not unless we detect it.
 		var tg_affected = gfx;      // this is always set.
@@ -2945,7 +2947,7 @@ var check_for_remove_code = function(x, y, andrender) {
 		var earliest_gfx = -1;
 		var latest_gfx = -1;
 
-		for ( var c = x + 1; c < 40; c++ ) {
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			var codehere = cc[y][c];
 
 			// Firstly, set-at attributes:
@@ -3000,8 +3002,8 @@ var check_for_remove_code = function(x, y, andrender) {
 	// control code is delete, set of background attributes
 	// need to be changed.
 	if ( code == 28 || code == 29 ) {
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 28 || cc[y][c] == 29 ) {
 				limit = c; break;
 			}
@@ -3023,8 +3025,8 @@ var check_for_remove_code = function(x, y, andrender) {
 		if ( x > 0 ) {
 			newsep = cs[y][x-1]; // Set-at
 		}
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 25 || cc[y][c] == 26 ) {
 				limit = c; break;
 			}
@@ -3050,9 +3052,9 @@ var check_for_remove_code = function(x, y, andrender) {
 		if ( code == 13 ) {
 			newheight = nd[y][x];   // double height is 'set-after'
 		}
-		var limit = 40;
+		var limit = colsDB;
 		var char_at_limit = -1;
-		for ( var c = x + 1; c < 40; c++ ) {
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 12 && newheight == 2 ) {
 				// Here we are changing from double height to
 				// normal text.
@@ -3097,9 +3099,9 @@ var check_for_remove_code = function(x, y, andrender) {
 		if ( code == 31 ) { // Set-after
 			newhg = hg[y][x];
 		}
-		var limit = 40;
+		var limit = colsDB;
 		var char_at_limit = -1;
-		for ( var c = x + 1; c < 40; c++ ) {
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 30 ) { // Set-at
 				limit = c; char_at_limit = 30; break;
 			}
@@ -3129,8 +3131,8 @@ var check_for_remove_code = function(x, y, andrender) {
 		if ( x > 0 ) {
 			newsc = sc[y][x-1];
 		}
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( ( cc[y][c] > 0 && cc[y][c] < 8 )
 			|| ( cc[y][c] > 16 && cc[y][c] < 24 )
 			|| ( blackfg != 0 && cc[y][c] == 0 )
@@ -3161,8 +3163,8 @@ var check_for_remove_code = function(x, y, andrender) {
 		if ( code == 9 && x > 0 ) { // Set-at
 			newsf = sf[y][x-1];
 		}
-		var limit = 40;
-		for ( var c = x + 1; c < 40; c++ ) {
+		var limit = colsDB;
+		for ( var c = x + 1; c < colsDB; c++ ) {
 			if ( cc[y][c] == 8 ) { limit = c+1; break; } // Set-after
 			if ( cc[y][c] == 9 ) { limit = c; break; } // Set-at
 		}
@@ -3213,7 +3215,7 @@ var autorender = function(x,y,w,h) {
 
 	// The span of characters on the next line that we're changing.
 	var nextfrom = -1;
-	var nextto = 40;
+	var nextto = colsDB;
 
 	// Going row-by-row,
 	for ( var r = y; r < y+h; r++ ) {
@@ -3232,7 +3234,7 @@ var autorender = function(x,y,w,h) {
 		// Reset the span.
 		var affectnext = 0;
 		var nextfrom = -1;
-		var nextto = 40;
+		var nextto = colsDB;
 
 		// Maybe we're starting in a double-height cell. If we are
 		// we know immediately that we should update the next row.
@@ -3256,7 +3258,7 @@ var autorender = function(x,y,w,h) {
 				// by a normal height character, we need
 				// to reset the limit of the next line
 				// back to 40.
-				nextto = 40;
+				nextto = colsDB;
 			}
 		}
 	}
@@ -3289,11 +3291,11 @@ var render = function(x, y, w, h) {
 	// Sometimes things go wrong, so we trim the box to the size of the
 	// frame.
 	if ( x < 0 ) { x = 0; }
-	if ( x > 39 ) { x = 39; }
+	if ( x >= colsDB ) { x = colsDB - 1; }
 	if ( y < 0 ) { y = 0; }
 	if ( y > 24 ) { y = 24; }
-	if ( x + w > 40 ) { w = 40 - x; }
-	if ( y + h > 40 ) { h = 25 - y; }
+	if ( x + w > colsDB ) { w = colsDB - x; }
+	if ( y + h > 25 ) { h = 25 - y; }
 
 	// It's time to save the frame to the hash. This is inefficient -
 	// we should do this only when there's been a change.
@@ -3594,12 +3596,12 @@ var render = function(x, y, w, h) {
 						if ( statushidden == 0 && grid == 1 && // guides only
 							(	( ( sx + sy ) % 2 == 0 && sx == 0 && r == 1 && c == 0 )
 							||	( ( sx + sy ) % 2 == 0 && sy == 0 && r == 1 && c < 2 )
-							||	( ( sx + sy ) % 2 == 1 && sx == 11 && r == 1 && c == 39 )
-							||	( ( sx + sy ) % 2 == 1 && sy == 0 && r == 1 && c > 37 )
+							||	( ( sx + sy ) % 2 == 1 && sx == 11 && r == 1 && c == colsDB-1 )
+							||	( ( sx + sy ) % 2 == 1 && sy == 0 && r == 1 && c > colsDB-3 )
 							||	( ( sx + sy ) % 2 == 1 && sx == 0 && r == 23 && c == 0 )
 							||	( ( sx + sy ) % 2 == 1 && sy == 19 && r == 23 && c < 2 )
-							||	( ( sx + sy ) % 2 == 0 && sx == 11 && r == 23 && c == 39 )
-							||	( ( sx + sy ) % 2 == 0 && sy == 19 && r == 23 && c > 37 )
+							||	( ( sx + sy ) % 2 == 0 && sx == 11 && r == 23 && c == colsDB-1 )
+							||	( ( sx + sy ) % 2 == 0 && sy == 19 && r == 23 && c > colsDB-3 )
 							||	( ( sx + sy ) % 2 == 0 && sx == 11 && sy < 10 && r == 0 && c == 7 )
 							) ) {
 							ctx.fillStyle = cell_grid; }
@@ -3641,12 +3643,12 @@ var render = function(x, y, w, h) {
 					if ( statushidden == 0 && grid == 1 && // guides only
 						(	( ( sx + sy ) % 2 == 0 && sx == 0 && r == 1 && c == 0 )
 						||	( ( sx + sy ) % 2 == 0 && sy == 0 && r == 1 && c < 2 )
-						||	( ( sx + sy ) % 2 == 1 && sx == 11 && r == 1 && c == 39 )
-						||	( ( sx + sy ) % 2 == 1 && sy == 0 && r == 1 && c > 37 )
+						||	( ( sx + sy ) % 2 == 1 && sx == 11 && r == 1 && c == colsDB-1 )
+						||	( ( sx + sy ) % 2 == 1 && sy == 0 && r == 1 && c > colsDB-3 )
 						||	( ( sx + sy ) % 2 == 1 && sx == 0 && r == 23 && c == 0 )
 						||	( ( sx + sy ) % 2 == 1 && sy == 19 && r == 23 && c < 2 )
-						||	( ( sx + sy ) % 2 == 0 && sx == 11 && r == 23 && c == 39 )
-						||	( ( sx + sy ) % 2 == 0 && sy == 19 && r == 23 && c > 37 )
+						||	( ( sx + sy ) % 2 == 0 && sx == 11 && r == 23 && c == colsDB-1 )
+						||	( ( sx + sy ) % 2 == 0 && sy == 19 && r == 23 && c > colsDB-3 )
 						||	( ( sx + sy ) % 2 == 0 && sx == 11 && r == 0 && sy < 10 && c == 7 )
 						) ) {
 						ctx.fillStyle = cell_grid; }
@@ -3742,7 +3744,7 @@ var gfx_change = function(x1, y1, x2, y2) {
 
 		// Advance.
 		px++;
-		if ( px > 40 ) { px = 0; py++; }
+		if ( px > colsDB ) { px = 0; py++; }
 	}
 
 	// Now we can decide what to do according to the state we determined
@@ -3761,7 +3763,7 @@ var gfx_change = function(x1, y1, x2, y2) {
 	var py = y2;
 	var px = x2 + 1;
 
-	while ( px < 40 ) {
+	while ( px < colsDB ) {
 
 		// We need to keep checking whether the graphic character has
 		// changed. It's the same process as above, except the action
@@ -3802,7 +3804,7 @@ var set_reveal_state = function(newreveal) {
 
 	// Now re-render the characters marked as concealed.
 	for ( var r = 0; r < 25; r++ ) {
-		for ( var c = 0; c < 40; c++ ) {
+		for ( var c = 0; c < colsDB; c++ ) {
 			if ( sc[r][c] > 0 ) {
 				autorender(c,r,1,1);
 			}
@@ -3979,13 +3981,13 @@ var add_font_char = function(code, l1, l2, l3, l4, l5, l6, l7, l8, l9) {
 var set_charset = function(charset) {
 	cset = charset;
 	init_font(cset);
-	render(0,0,40,25,0);
+	render(0,0,colsDB,25,0);
 }
 
 var cycle_charset = function() {
 	cset = ( cset + 1 ) % 8;
 	init_font(cset);
-	render(0,0,40,25,0);
+	render(0,0,colsDB,25,0);
 }
 
 // Given the number of a character set, init_font loads the
@@ -5085,7 +5087,7 @@ var hide_help_screen = function() {
 		helpscreenshown = 0;
 
 		init_canvas();
-		render(0,0,40,25,0);
+		render(0,0,colsDB,25,0);
 		draw_status_bar();
 	}
 }
@@ -5107,7 +5109,7 @@ var padstring = function(char, width, string) {
 // Test whether the editor screen is all spaces.
 this.is_all_spaces = function() {
 	for (var r = 0; r <= 24; r++) {
-		for (var c = 0; c < 40; c++) {
+		for (var c = 0; c < colsDB; c++) {
 			if ( cc[r][c] !== 32 ) {
 				return false;
 			}
@@ -5135,7 +5137,7 @@ this.init_frame = function(id) {
 
 	// Set up the screen and render it.
 	init_state();
-	render(0, 0, 40, 25, 0);
+	render(0, 0, colsDB, 25, 0);
 
 	// Set up listeners for events
 	init_mouse();
