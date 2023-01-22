@@ -125,8 +125,8 @@ var full_pix_scale = 2;
 				 // look better zoomed in.
 var pix_scale = full_pix_scale;
 		 // specifies how much to stretch the x direction.
-var aspect_ratios = [1, 1.1, 1.2, 1.22, 1.3, 1.33, 1.36, 1.4, 1.5, 1.75, 2];
-var current_ratio = 2; // index of aspect_ratios
+var aspect_ratios = [1, 1.1, 1.2, 1.22, 1.3, 1.33, 1.36, 1.4, 1.5, 1.75, 2, 0.6];
+var current_ratio = 11; // index of aspect_ratios
 var aspect_ratio = aspect_ratios[current_ratio];
 var pix_size = 1;
 		 // If all the pixels are 1:1
@@ -226,6 +226,7 @@ var init_trace = function() {
 	if ( trace == 1 ) {
 		if ( trace_whole_area == 1 ) { // We are tracing the whole area
 			cfdiv.style.background = "url(\"" + trace_url + "\") no-repeat center top";
+			cfdiv.style.backgroundSize = "contain";
 		} else { // We are tracing a sub-rectangle
 			cfdiv.style.background = "url(\"" + trace_url + "\") no-repeat "
 				+ ( trace_position_x * aspect_ratio) + "px " + trace_position_y + "px";
@@ -933,9 +934,30 @@ var load_from_hashstring = function(hashstring) {
 	// 25-line frames have two bits at the end which are ignored and
 	// just exist for padding.
 
-	if ( hashstring.length == 1120 || hashstring.length == 1167 ) {
-		var numlines = 25;
-		if ( hashstring.length == 1120 ) { numlines = 24; }
+	const hl40x24 = Math.ceil(40*24*7/6); //1120
+	const hl40x25 = Math.ceil(40*25*7/6); //1167
+	const hl80x24 = Math.ceil(80*24*7/6); //2240
+	const hl80x25 = Math.ceil(80*25*7/6); //2334
+	const hls = [hl40x24, hl40x25, hl80x24, hl80x25];
+
+	console.log(`l=${hashstring.length}, ${hls}`);
+
+	if ( hls.includes(hashstring.length) ) {
+		switch(hashstring.length) {
+			case hl40x24:
+				numlines = 24;
+				break;
+			case hl80x24:
+				numlines = 24;
+				numcols = 80;
+				break;
+			case hl80x25:
+				numlines = 25;
+				numcols = 80;
+				break;
+		}
+
+		console.log(`l=${hashstring.length}, r=${numlines}, c=${numcols}`);
 
 		// As we scan across the hashstring, we keep track of the
 		// code for the current character cell we're writing into.
@@ -970,8 +992,8 @@ var load_from_hashstring = function(hashstring) {
 
 					// Work out the cell to write to and put it there.
 					var charnum = ( ( 6*p + b ) - charbit ) / 7;
-					var c = charnum % colsDB;
-					var r = (charnum - c) / colsDB;
+					var c = charnum % numcols;
+					var r = (charnum - c) / numcols;
 					if ( placeable(currentcode) == 1 ) {
 						place_code(c, r, currentcode, 0);
 					} else {
@@ -1041,10 +1063,12 @@ var save_to_hash = function() {
 		}
 	}
 
-	// Encode bit-for-bit.
+/*	// Encode bit-for-bit.
 	for ( var i = 0; i < 1167; i++ ) {
 		encoding += "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".charAt(b64[i]);
 	}
+*/
+	encoding += b64.map(x => "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_".charAt(x)).join("");
 
 	/* restore extended hash key=value pairs */
 	for (var i = 0; i < hashStringKeys.length; i++){
