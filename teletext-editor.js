@@ -924,7 +924,7 @@ var load_from_hashstring = function(hashstring) {
 				}
 			}
 		}
-	}
+	} else {
 
 	// This block deals with the new base 64 format.
 
@@ -1010,6 +1010,7 @@ var load_from_hashstring = function(hashstring) {
 		// line.
 		if ( numlines == 24 ) {
 			for ( var x = 0; x < colsDB; x++ ) { clear_char(x,24) }
+			}
 		}
 	}
 }
